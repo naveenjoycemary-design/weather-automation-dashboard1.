@@ -12,8 +12,8 @@ import plotly.express as px
 # CONFIGURATION
 # =========================
 
-API_KEY = os.getenv("efd6b4dcc0f1b762d34a167b399098a5")
-DB_PASSWORD = os.getenv("ykAAFwsZzFztPQQSuHcczaLucwqifwqI")
+API_KEY = os.getenv("OPENWEATHER_API_KEY")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 IST = pytz.timezone("Asia/Kolkata")
 
