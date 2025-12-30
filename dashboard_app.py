@@ -15,11 +15,13 @@ st.caption("Automated weather monitoring using Python, SQL, and Streamlit")
 # DATABASE CONNECTION
 # =========================
 DB_CONFIG = {
-    "host": "localhost",
+    "host": "shortline.proxy.rlwy.net",
+    "port": 46617,
     "user": "root",
-    "password": "pass123",
+    "password": "<RAILWAY_PASSWORD>",
     "database": "weather_dashboard"
 }
+
 
 @st.cache_data(ttl=300)
 def load_data():
