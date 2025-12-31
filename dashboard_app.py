@@ -57,7 +57,8 @@ def ingest_weather_once():
         user=DB_CONFIG["user"],
         password=DB_CONFIG["password"],
         database=DB_CONFIG["database"],
-        cursorclass=pymysql.cursors.DictCursor
+        cursorclass=pymysql.cursors.DictCursor,
+        ssl={"ssl": True}
     )
 
     cursor = conn.cursor()
@@ -110,7 +111,8 @@ def load_data():
         user=DB_CONFIG["user"],
         password=DB_CONFIG["password"],
         database=DB_CONFIG["database"],
-        cursorclass=pymysql.cursors.DictCursor
+        cursorclass=pymysql.cursors.DictCursor,
+        ssl={"ssl": True}
     )
 
     query = """
