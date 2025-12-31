@@ -1,5 +1,4 @@
 import os
-import time
 import requests
 from datetime import datetime
 import pytz
@@ -34,7 +33,9 @@ DB_CONFIG = {
     "database": "railway"
 }
 
-# Safety check
+# =========================
+# SAFETY CHECK
+# =========================
 if not API_KEY or not DB_PASSWORD:
     st.error("Secrets not set. Please configure OPENWEATHER_API_KEY and DB_PASSWORD.")
     st.stop()
@@ -57,35 +58,41 @@ def get_connection(dict_cursor=False):
         password=DB_CONFIG["password"],
         database=DB_CONFIG["database"],
         cursorclass=pymysql.cursors.DictCursor if dict_cursor else None,
-        ssl={
-            "check_hostname": False,
-            "verify_mode": False
-        }
+        ssl={"check_hostname": False, "verify_mode": False}
     )
 
 # =========================
-# INGESTION CONTROL (DB-BASED)
+# INGESTION CONTROL (ROBUST)
 # =========================
 def should_ingest():
-    conn = get_connection(dict_cursor=True)
-    cursor = conn.cursor()
-    cursor.execute("SELECT MAX(recorded_at) AS last_time FROM weather_data")
-    result = cursor.fetchone()
-    conn.close()
+    try:
+        conn = get_connection(dict_cursor=True)
+        cursor = conn.cursor()
+        cursor.execute("SELECT MAX(recorded_at) AS last_time FROM weather_data")
+        result = cursor.fetchone()
+        conn.close()
 
-    if not result or result["last_time"] is None:
+        if not result or result["last_time"] is None:
+            return True
+
+        last_time = result["last_time"]
+
+        # Convert string → datetime if needed
+        if isinstance(last_time, str):
+            last_time = datetime.strptime(last_time, "%Y-%m-%d %H:%M:%S")
+
+        # Make BOTH datetimes naive (MySQL DATETIME has no timezone)
+        now_naive = datetime.now(IST).replace(tzinfo=None)
+
+        return (now_naive - last_time).total_seconds() >= 3600
+
+    except Exception:
+        # If anything goes wrong, allow ingestion rather than crashing
         return True
 
-    last_time = result["last_time"]
-
-    # 🔴 FIX: convert string → datetime if needed
-    if isinstance(last_time, str):
-        last_time = datetime.strptime(last_time, "%Y-%m-%d %H:%M:%S")
-
-    return (datetime.now(IST) - last_time).total_seconds() >= 3600
-
-
-
+# =========================
+# INGEST WEATHER DATA
+# =========================
 def ingest_weather_once():
     conn = get_connection(dict_cursor=True)
     cursor = conn.cursor()
@@ -110,7 +117,7 @@ def ingest_weather_once():
                     data["sys"]["country"],
                     round(data["main"]["temp"] - 273.15, 2),
                     data["main"]["humidity"],
-                    datetime.now(IST)
+                    datetime.now(IST).replace(tzinfo=None)
                 )
             )
         except Exception:
@@ -119,7 +126,7 @@ def ingest_weather_once():
     conn.commit()
     conn.close()
 
-
+# Run ingestion if required
 if should_ingest():
     ingest_weather_once()
 
@@ -143,8 +150,11 @@ def load_data():
     conn.close()
     return df
 
-
 df = load_data()
+
+if df.empty:
+    st.warning("No data available yet. Please wait for the first ingestion.")
+    st.stop()
 
 # =========================
 # SIDEBAR FILTERS
