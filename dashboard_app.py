@@ -151,7 +151,7 @@ def load_data():
             humidity_percent,
             recorded_at
         FROM weather_data
-        ORDER BY recorded_at
+        ORDER BY desc recorded_at
     """
     df = pd.read_sql(query, conn)
     conn.close()
