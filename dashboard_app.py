@@ -31,7 +31,7 @@ DB_CONFIG = {
     "port": 46617,
     "user": "root",
     "password": DB_PASSWORD,
-    "database": "weather_dashboard"
+    "database": "railway"
 }
 
 # 🔴 SAFETY CHECK (MANDATORY)

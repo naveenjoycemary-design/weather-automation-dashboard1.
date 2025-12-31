@@ -15,7 +15,7 @@ DB_CONFIG = {
     "port": 3306,
     "user": "root",
     "password": "ykAAFwsZzFztPQQSuHcczaLucwqifwqI",
-    "database": "weather_dashboard"
+    "database": "railway"
 }
 
 
